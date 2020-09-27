@@ -1,0 +1,35 @@
+# Serverless Docs: docs.serverless.com
+service: user-profiling-api
+
+frameworkVersion: ">=1.67.0 <2.0.0"
+
+provider:
+  name: aws
+  runtime: python3.7
+  stage: ${opt:stage, 'dev'}
+  region: eu-west-1
+  profile: citibeats-universe
+  environment:
+    USER_PROFILER_CELERY_APP_NAME: "Name of the celery worker."
+    USER_PROFILER_CELERY_BROKER_URL: "Url of the message broker."
+    USER_PROFILER_CELERY_QUEUE: "Name of the task queue."
+    USER_PROFILER_CELERY_TASK_NAME: "Name of the task."
+  role: arn:aws:iam::337878073417:role/user-profiling-api-lambda
+  cfnRole: arn:aws:iam::337878073417:role/user-profiling-api-cloudformation
+functions:
+  profile_users:
+    handler: src/handler.profile_users
+    timeout: 30
+    events:
+      - http:
+          path: profile-users
+          method: post
+          cors: false
+
+plugins:
+  - serverless-python-requirements
+
+package:
+  exclude:
+    - env/**
+    - .vscode/**
